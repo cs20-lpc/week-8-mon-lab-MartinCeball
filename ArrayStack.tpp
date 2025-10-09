@@ -1,6 +1,13 @@
+#include <string>       // Required for throwing string exceptions
+#include <stdexcept>    // This can be removed or left
+
+using namespace std;
+
 template <typename T>
 ArrayStack<T>::ArrayStack(int i) {
-    // TODO
+    maxSize = i;
+    buffer = new T[maxSize];
+    this->length = 0;
 }
 
 template <typename T>
@@ -11,7 +18,7 @@ ArrayStack<T>::ArrayStack(const ArrayStack<T>& copyObj) {
 template <typename T>
 ArrayStack<T>& ArrayStack<T>::operator=(const ArrayStack<T>& rightObj) {
     if (this != &rightObj) {
-        clear();
+        delete[] buffer;
         copy(rightObj);
     }
     return *this;
@@ -19,17 +26,23 @@ ArrayStack<T>& ArrayStack<T>::operator=(const ArrayStack<T>& rightObj) {
 
 template <typename T>
 ArrayStack<T>::~ArrayStack() {
-    clear();
+    delete[] buffer;
 }
 
 template <typename T>
 void ArrayStack<T>::clear() {
-    // TODO
+    this->length = 0;
 }
 
 template <typename T>
 void ArrayStack<T>::copy(const ArrayStack<T>& copyObj) {
-    // TODO
+    this->maxSize = copyObj.maxSize;
+    this->length = copyObj.length;
+    this->buffer = new T[this->maxSize];
+
+    for (int i = 0; i < this->length; i++) {
+        this->buffer[i] = copyObj.buffer[i];
+    }
 }
 
 template <typename T>
@@ -54,22 +67,55 @@ bool ArrayStack<T>::isFull() const {
 
 template <typename T>
 T ArrayStack<T>::peek() const {
-    // TODO
+    if (isEmpty()) {
+        // Throw a string exception as per instructions
+        throw string("Error: Cannot peek from an empty stack.");
+    }
+    return buffer[this->length - 1];
 }
 
 template <typename T>
 void ArrayStack<T>::pop() {
-    // TODO
+    if (isEmpty()) {
+        // Throw a string exception as per instructions
+        throw string("Error: Cannot pop from an empty stack.");
+    }
+    this->length--;
 }
 
 template <typename T>
 void ArrayStack<T>::push(const T& elem) {
-    // TODO
+    if (isFull()) {
+        // Throw a string exception as per instructions
+        throw string("Error: Cannot push to a full stack.");
+    }
+    buffer[this->length] = elem;
+    this->length++;
 }
 
 template <typename T>
 void ArrayStack<T>::rotate(typename Stack<T>::Direction dir) {
-    // TODO
+    if (this->length < 2) {
+        return; // Nothing to rotate
+    }
+
+    // Per instructions, use RIGHT/LEFT from the Stack<T> scope
+    if (dir == Stack<T>::RIGHT) {
+        // Move bottom element to the top
+        T bottomElement = buffer[0];
+        for (int i = 0; i < this->length - 1; i++) {
+            buffer[i] = buffer[i + 1];
+        }
+        buffer[this->length - 1] = bottomElement;
+    }
+    else { // Assumes LEFT
+        // Move top element to the bottom
+        T topElement = buffer[this->length - 1];
+        for (int i = this->length - 1; i > 0; i--) {
+            buffer[i] = buffer[i - 1];
+        }
+        buffer[0] = topElement;
+    }
 }
 
 template <typename T>
@@ -78,12 +124,12 @@ ostream& operator<<(ostream& outStream, const ArrayStack<T>& myObj) {
         outStream << "Stack is empty, no elements to display.\n";
     }
     else {
+        outStream << "---- STACK (size " << myObj.getLength() << "/" << myObj.getMaxSize() << ") ----\n";
         for (int i = myObj.length - 1; i >= 0; i--) {
-            outStream << (i == myObj.length - 1 ? "top\t" : "\t")
-                      << myObj.buffer[i] << endl;
+            outStream << (i == myObj.length - 1 ? "top ->\t" : "\t")
+                      << myObj.buffer[i] << "\n";
         }
+        outStream << "---------------------------\n";
     }
-
     return outStream;
 }
-
